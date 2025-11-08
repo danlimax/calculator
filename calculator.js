@@ -1,4 +1,5 @@
 const display = document.querySelector("#display");
+const history = document.querySelector("#history");
 const numbers = document.querySelectorAll(".number");
 const operators = document.querySelectorAll(".operator");
 const equals = document.querySelector("#equals");
@@ -22,32 +23,33 @@ function divide(a, b) {
   return b !== 0 ? a / b : "Erro";
 }
 
-function operate(operator, num1, num2) {
-  switch (operator) {
+function operate(op, a, b) {
+  switch (op) {
     case "+":
-      return add(num1, num2);
+      return add(a, b);
     case "-":
-      return subtract(num1, num2);
+      return subtract(a, b);
     case "*":
-      return multiply(num1, num2);
+      return multiply(a, b);
     case "/":
-      return divide(num1, num2);
+      return divide(a, b);
     default:
-      return num2;
+      return b;
   }
 }
 
 numbers.forEach((btn) => {
   btn.addEventListener("click", (e) => {
     currentValue += e.target.value;
-    display.value = currentValue;
+    display.textContent = currentValue;
   });
 });
 
 operators.forEach((btn) => {
   btn.addEventListener("click", (e) => {
-    if (currentValue === "") return;
-    if (previousValue !== "") {
+    if (!currentValue) return;
+
+    if (previousValue) {
       previousValue = operate(
         currentOperator,
         parseFloat(previousValue),
@@ -56,34 +58,40 @@ operators.forEach((btn) => {
     } else {
       previousValue = currentValue;
     }
+
     currentOperator = e.target.value;
+    history.textContent = `${previousValue} ${currentOperator}`;
     currentValue = "";
-    display.value = previousValue;
+    display.textContent = previousValue;
   });
 });
 
 equals.addEventListener("click", () => {
-  if (currentOperator && previousValue !== "" && currentValue !== "") {
-    previousValue = operate(
-      currentOperator,
-      parseFloat(previousValue),
-      parseFloat(currentValue)
-    );
-    display.value = previousValue;
-    currentOperator = null;
-    currentValue = "";
-  }
+  if (!currentOperator || !currentValue) return;
+
+  const result = operate(
+    currentOperator,
+    parseFloat(previousValue),
+    parseFloat(currentValue)
+  );
+
+  history.textContent = `${previousValue} ${currentOperator} ${currentValue} =`;
+  display.textContent = result;
+
+  currentValue = "";
+  previousValue = result;
+  currentOperator = null;
 });
 
 clear.addEventListener("click", () => {
   currentValue = "";
   previousValue = "";
   currentOperator = null;
-  display.value = "";
+  display.textContent = "0";
+  history.textContent = "";
 });
 
 clean.addEventListener("click", () => {
   currentValue = currentValue.slice(0, -1);
-
-  display.value = currentValue;
+  display.textContent = currentValue || "0";
 });
